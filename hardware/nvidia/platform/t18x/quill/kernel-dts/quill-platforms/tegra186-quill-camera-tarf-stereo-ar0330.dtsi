@@ -1,0 +1,155 @@
+/* Tarf device tree for Stereo AR0330 support */
+#include <dt-bindings/media/camera.h>
+#include <dt-bindings/platform/t210/t210.h>
+#include "dt-bindings/clock/tegra186-clock.h"
+
+#define CAM0_RST_L	TEGRA_MAIN_GPIO(R, 5)
+#define CAM0_PWDN	TEGRA_MAIN_GPIO(R, 0)
+
+
+/ {
+	host1x {
+		vi@15700000 {
+			num-channels = <1>;
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				port@0 {
+					reg = <0>;
+					tarf_vi_in0: endpoint {
+						csi-port = <0>;
+						bus-width = <4>;
+						remote-endpoint = <&tarf_csi_out0>;
+					};
+				};
+			};
+		};
+
+		nvcsi@150c0000 {
+			num-channels = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			channel@0 {
+				reg = <0>;
+				ports {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					port@0 {
+						reg = <0>;
+						tarf_csi_in0: endpoint@0 {
+							csi-port = <0>;
+							bus-width = <4>;
+							remote-endpoint = <&tarf_ar0330_out0>;
+						};
+					};
+					port@1 {
+						reg = <1>;
+						tarf_csi_out0: endpoint@1 {
+							remote-endpoint = <&tarf_vi_in0>;
+						};
+					};
+				};
+			};
+		};
+
+	};
+
+	/* i2c-7 - c250000 for Tarf ar0330 stereo default */
+	/* i2c-2 - 3180000 for Tarf ar0330 stereo secondary option */
+	
+	i2c@c250000 {
+		status = "okay";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		ar0330_a@3c {
+			status = "okay";
+			compatible = "nvidia,ar0330";
+			reg = <0x3c>;
+			sensor_model ="ar0330";
+			avdd-reg = "vana";
+			iovdd-reg = "vif";
+			post_crop_frame_drop = "0";
+			clocks = <&tegra_car TEGRA186_CLK_EXTPERIPH1>,
+					 <&tegra_car TEGRA186_CLK_PLLP_OUT0>;
+			clock-names = "extperiph1", "pllp_grtba";
+			mclk = "extperiph1";
+			clock-frequency = <24000000>;
+			reset-gpios = <&tegra_main_gpio CAM0_RST_L GPIO_ACTIVE_HIGH>;
+			pwdn-gpios = <&tegra_main_gpio CAM0_PWDN GPIO_ACTIVE_HIGH>; 
+			vana-supply = <&battery_reg>;
+			vif-supply = <&battery_reg>;
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				port@0 {
+					reg = <0>;
+					tarf_ar0330_out0: endpoint {
+						csi-port = <0>;
+						bus-width = <4>;
+						remote-endpoint = <&tarf_csi_in0>;
+					};
+				};
+			};
+  		mode0 { /*   AR0330_STEREO_MODE0 */
+					mclk_khz = "24000"; /* 24 MHz */
+					num_lanes = "4"; /* 2 lane config */
+					tegra_sinterface = "serial_a"; /* CSI port A */
+					discontinuous_clk = "no"; /* continous clock settings */
+					dpcm_enable = "false"; /* no mipi compression */
+					cil_settletime = "0"; /* Auto calibration */
+					dynamic_pixel_bit_depth = "16";
+					csi_pixel_bit_depth = "16";
+					mode_type = "bayer";
+					pixel_phase = "rggb";
+					pixel_t = "uyvy";						
+					active_w = "1280";
+					active_h = "720";
+					readout_orientation = "0";
+					line_length = "4608"; /* HMAX */
+					inherent_gain = "1";	/* TBD */
+					mclk_multiplier = "8"; /* should be > PCLK/MCLK */
+					pix_clk_hz = "424673280"; /* Hmax x Vmax x FPS */
+
+					min_gain_val = "0"; /* gain in dB */
+					max_gain_val = "72";  /* gain in dB */
+					min_hdr_ratio = "1";	/* TBD */
+					max_hdr_ratio = "1";	/* TBD */
+					min_framerate = "1.00"; /* 1/(max exposure in sec) */
+					max_framerate = "60.00"; /* 1/(max exposure in sec) */
+					min_exp_time = "7"; /* integration time in microsec */
+					max_exp_time = "901871"; /* integration time in microsec */
+					embedded_metadata_height = "1";
+					/* To fix errors in v4l2-ctl */
+					/*  gain_factor = "1";  - TBD */ 
+					/*  framerate_factor = "1"; - TBD */
+			};
+		};
+	};
+
+	tegra-camera-platform {
+		compatible = "nvidia, tegra-camera-platform";
+		modules {
+			module0 {
+				badge = "tarf_stereo_ar0330";
+				position = "rear";
+				orientation = "1";
+				drivernode0 {
+					pcl_id = "v4l2_sensor";
+					devname = "tarf_stereo_ar0330_TX2";
+					proc-device-tree = "/proc/device-tree/i2c@c250000/ar0330_a@3c";
+					status = "okay";
+				};
+			};
+		};
+	};
+
+	gpio@2200000 {
+		camera-control-output-low {
+			gpio-hog;
+			output-low;
+			gpios = <CAM0_RST_L 0 CAM0_PWDN 0>;
+			label = "cam0-rst", "cam0-pwdn";
+		};
+	};
+
+};
