@@ -45,9 +45,17 @@
 	host1x {
 		/* Head0->SOR0->eDP */
 		nvdisplay@15200000 {
+			status = "okay";
 			vdd_lcd_bl_en-supply = <&vdd_lcd_bl_en>; /* GPIO_DIS3 / LCD_BL_EN for eDP */
 			nvidia,dc-or-node = "/host1x/sor";
 			nvidia,dc-connector = <&sor0>;
+			nvidia,fb-win = <0>;
+			win-mask = <0x7>;
+		};
+
+		nvdisplay@15210000 {
+			nvidia,fb-win = <3>;
+			win-mask = <0x38>;
 		};
 
 		sor {

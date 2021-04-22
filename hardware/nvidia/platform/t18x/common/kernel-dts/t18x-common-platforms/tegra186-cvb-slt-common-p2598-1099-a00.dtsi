@@ -153,7 +153,8 @@
 			regulator-name = "vddio-5v0-hdmi";
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
-			gpio = <&gpio_i2c_0_74 12 0>;
+			//gpio = <&gpio_i2c_0_74 12 0>;
+                        gpio = <&tegra_main_gpio TEGRA_MAIN_GPIO(BB, 0) 0>;
 			enable-active-high;
 		};
 

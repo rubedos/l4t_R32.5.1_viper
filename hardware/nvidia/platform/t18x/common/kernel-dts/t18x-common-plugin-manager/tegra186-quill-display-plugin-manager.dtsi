@@ -15,25 +15,19 @@
 
 / {
 	plugin-manager {
-		fragment-e3320-a00@1 {
-			ids = "3320-1000-000", "3320-1100-000";
-			overrides@1 {
-				target = <&{/i2c@3160000/tps65132@3e}>;
-				_overlay_ {
-					status = "okay";
-					outp {
-						ti,enable-gpio = <&gpio_i2c_0_21 2 0>;
-					};
-					outn {
-						ti,enable-gpio = <&gpio_i2c_0_21 3 0>;
-					};
-				};
-			};
-			overrides@2 {
+		fragment-e3320 {
+			ids = ">=3320-1000-000", ">=3320-1100-000";
+			overrides@0 {
 				target = <&{/host1x}>;
 				_overlay_ {
 					nvdisplay@15200000 {
 						status = "okay";
+						nvidia,fb-win = <0>;
+						win-mask = <0x7>;
+					};
+					nvdisplay@15210000 {
+						nvidia,fb-win = <3>;
+						win-mask = <0x38>;
 					};
 					dsi {
 						status = "okay";
@@ -44,68 +38,6 @@
 					};
 				};
 			};
-			overrides@3 {
-                                target = <&{/i2c@3160000}>;
-                                _overlay_ {
-                                        gpio@21 {
-                                                status = "okay";
-                                        };
-                                        lp8557-backlight-s-wuxga-8-0@2c {
-                                                status = "okay";
-                                        };
-                                };
-                        };
-		};
-
-		fragment-e3320-a01@1 {
-			ids = "3320-1000-100", "3320-1000-200";
-			overrides@1 {
-				target = <&{/i2c@3160000/tps65132@3e}>;
-				_overlay_ {
-					status = "okay";
-					outp {
-						ti,enable-gpio = <&gpio_i2c_0_77 4 0>;
-					};
-					outn {
-						delete-target-property = "ti,disable-active-discharge";
-						ti,enable-gpio = <&gpio_i2c_0_21 2 0>;
-						ti,active-discharge-gpio = <&gpio_i2c_0_21 3 0>;
-						ti,active-discharge-time = <2000>; /* in us */
-					};
-				};
-			};
-			overrides@2 {
-				target = <&en_vdd_disp_1v8>;
-				_overlay_ {
-					gpio = <&gpio_i2c_0_21 0 0>;
-				};
-			};
-			overrides@3 {
-				target = <&{/host1x}>;
-				_overlay_ {
-					nvdisplay@15200000 {
-						status = "okay";
-					};
-					dsi {
-						status = "okay";
-						nvidia,active-panel = <&panel_s_wuxga_8_0>;
-						panel-s-wuxga-8-0 {
-							status = "okay";
-						};
-					};
-				};
-			};
-                        overrides@4 {
-                                target = <&{/i2c@3160000}>;
-                                _overlay_ {
-                                        gpio@21 {
-                                                status = "okay";
-                                        };
-                                        lp8557-backlight-s-wuxga-8-0@2c {
-                                                status = "okay";
-                                        };
-                                };
-                        };
 		};
 
 		fragment-e1639-sharp-25x16@2 {

@@ -25,17 +25,20 @@
 		nvdisplay@15200000 {
 			status = "okay";
 			nvidia,dc-or-node = "/host1x/sor1";
+			nvidia,fb-win = <0>;
+			win-mask = <0x3f>;
 			nvidia,dc-connector = <&sor1>;
 		};
 		nvdisplay@15210000 {
 			status = "disabled";
-			nvidia,dc-or-node = "/host1x/dsi";
-			nvidia,dc-connector = <&dsi>;
 		};
 		nvdisplay@15220000 {
 			status = "disabled";
-			nvidia,dc-or-node = "/host1x/sor";
-			nvidia,dc-connector = <&sor0>;
 		};
+	};
+
+	plugin-manager {
+		/delete-node/ fragment-e3320-dp;
+		/delete-node/ fragment-e3320;
 	};
 };

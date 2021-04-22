@@ -16,6 +16,7 @@
 #include "tegra186-soc-prod-plugin-manager.dtsi"
 #include "tegra186-odm-data-plugin-manager.dtsi"
 #include "tegra186-quill-p3310-1000-300-plugin-manager.dtsi"
+#include "tegra186-quill-display-plugin-manager.dtsi"
 
 / {
 	eeprom-manager {
@@ -309,8 +310,14 @@
 			override@0 {
 				target = <&{/host1x}>;
 				_overlay_ {
+					nvdisplay@15210000 {
+						nvidia,fb-win = <3>;
+						win-mask = <0x18>;
+					};
 					nvdisplay@15220000 {
 						status = "okay";
+						nvidia,fb-win = <5>;
+						win-mask = <0x20>;
 					};
 					sor {
 						status = "okay";

@@ -152,6 +152,12 @@
 	};
 
 	plugin-manager {
-		/delete-node/ fragment-e3320-dp;
+		fragment-e3320-dp {
+			override@0 {
+				_overlay_ {
+					/delete-node/ sor;
+				};
+			};
+		};
 	};
 };

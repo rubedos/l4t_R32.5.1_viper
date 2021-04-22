@@ -311,12 +311,6 @@ config PWM_PCA9685
 	  To compile this driver as a module, choose M here: the module
 	  will be called pwm-pca9685.
 
-config PCA9685_ECON_CALIBRATION
-	tristate "e-con Systems PCA9685 PWM Calibration"
-	depends on PWM_PCA9685!=n
-	help
-	  Enable to calibrate the PCA9685 module for e-con Systems cameras
-
 config PWM_PUV3
 	tristate "PKUnity NetBook-0916 PWM support"
 	depends on ARCH_PUV3

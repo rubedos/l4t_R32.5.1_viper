@@ -140,7 +140,8 @@
 			regulator-name = "vdd-hdmi";
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
-			gpio = <&gpio_i2c_0_74 12 1>;
+			//gpio = <&gpio_i2c_0_74 12 1>;
+		        gpio = <&tegra_main_gpio TEGRA_MAIN_GPIO(BB, 0) 1>;
 			enable-active-high;
 			regulator-always-on;
 			regulator-boot-on;
@@ -248,7 +249,8 @@
 			regulator-name = "vdd-fan";
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
-			gpio = <&gpio_i2c_0_74 4 0>;
+			//gpio = <&gpio_i2c_0_74 4 0>;
+			gpio = <&tegra_main_gpio TEGRA_MAIN_GPIO(J, 5) 0>;
 		};
 
 		hdr40_vdd_3v3: vdd_3v3: regulator@14 {
