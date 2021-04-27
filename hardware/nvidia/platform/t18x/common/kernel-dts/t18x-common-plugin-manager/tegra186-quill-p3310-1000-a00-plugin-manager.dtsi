@@ -231,13 +231,13 @@
 				target = <&xusb_padctl>;
 				_overlay_ {
 					ports {
-						usb3-1 {
-							status = "disabled";
-						};
-						usb3-0 {
-							nvidia,usb2-companion = <1>;
-							status = "okay";
-						};
+						//usb3-1 {
+						//	status = "disabled";
+						//};
+						//usb3-0 {
+						//	nvidia,usb2-companion = <1>;
+						//	status = "okay";
+						//};
 					};
 				};
 #else

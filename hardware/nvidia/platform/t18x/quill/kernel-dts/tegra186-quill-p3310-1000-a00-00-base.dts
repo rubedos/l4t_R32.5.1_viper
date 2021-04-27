@@ -162,24 +162,24 @@
 					};
 					usb2-2 {
 						nvidia,function = "xusb";
-						status = "okay";
+						status = "disabled";
 					};
 				};
 			};
 			usb3 {
 				lanes {
-					usb3-0 {
-						nvidia,function = "xusb";
-						status = "okay";
-					};
+					//usb3-0 {
+					//	nvidia,function = "xusb";
+					//	status = "okay";
+					//};
 					usb3-1 {
 						nvidia,function = "xusb";
 						status = "okay";
 					};
-					usb3-2 {
-						nvidia,function = "xusb";
-						status = "okay";
-					};
+					//usb3-2 {
+					//	nvidia,function = "xusb";
+					//	status = "okay";
+					//};
 				};
 			};
 		};
@@ -198,13 +198,13 @@
 				nvidia,oc-pin = <1>;
 			};
 			usb2-2 {
-				status = "okay";
+				status = "disabled";
 				mode = "host";
 				vbus-supply = <&vdd_usb2_5v>;
 			};
-			usb3-0 {
-				nvidia,usb2-companion = <2>;
-			};
+			//usb3-0 {
+			//	nvidia,usb2-companion = <2>;
+			//};
 			usb3-1 {
 				nvidia,usb2-companion = <1>;
 				status = "okay";

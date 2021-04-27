@@ -134,12 +134,13 @@
 	xusb_padctl@3520000 {
 		ports {
 			usb3-1 {
-				status = "disabled";
-			};
-			usb3-0 {
 				nvidia,usb2-companion = <1>;
 				status = "okay";
 			};
+			//usb3-0 {
+			//	nvidia,usb2-companion = <1>;
+			//	status = "okay";
+			//};
 		};
 	};
 
