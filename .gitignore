@@ -42,6 +42,14 @@
 *.idb
 *.pdb
 
+# Backups
+*.orig
+*.bak
+*.rec
+
+# build
+build/
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd
