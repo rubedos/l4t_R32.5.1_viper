@@ -21,8 +21,7 @@ static struct ar0330_reg mode_def[] = {
         {0x3086, 0x0253},
         {0x30CE, 0x0010},
         {0x301A, 0x015C},
-        {AR0330_TABLE_END, 0x00}
-
+        {AR0330_TABLE_END, 0x00},
 };
 
 static struct ar0330_reg mode_2304x1536[] = {
@@ -804,7 +803,6 @@ extern struct ar0330_reg mode_720p_60fps[] = {
 	{SWP(0x0000, 0x0001)},
 };
 
-
 extern struct ar0330_reg mode_stop[] = {
 	{SWP(0x000a, 0x0000)},
 	{SWP(0x0000, 0x0001)},
@@ -829,3 +827,4 @@ static struct ar0330_reg *mode_table[] = {
         [AR0330_MODE_TEST_PATTERN] = mode_720p_60fps, //tp_colorbar,
 	[AR0330_MODE_STOP_STREAM] = mode_stop,
 };
+

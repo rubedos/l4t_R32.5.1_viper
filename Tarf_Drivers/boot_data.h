@@ -3,7 +3,7 @@
 
 #define BURST_SIZE 0x0358       // Value from decompiled module
 #define BOOT_DATA_VERSION 1
-#define BOOT_DATA_CRC 0x216     // Real CRC pulled out of decompiled kernel module 0x900 is the actual value calculated by the board??
+#define BOOT_DATA_CRC 0x900    //0x216     // Real CRC pulled out of decompiled kernel module 0x900 is the actual value calculated by the board??
 #define PLL_INIT_SIZE 0x03f4	// Good value pulled out of decompiled kernel module
 
 
