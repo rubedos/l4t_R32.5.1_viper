@@ -1,0 +1,27 @@
+#TARGET  := Tarf_ar0330_stereo_camera
+TARGET  := hello
+WARN    := -W -Wall -Wstrict-prototypes -Wmissing-prototypes
+#INCLUDE := -isystem /lib/modules/`uname -r`/build/include -isystem linux-headers-4.9.201-tegra-ubuntu18.04_aarch64/kernel-4.9/arch/arm64/include
+#INCLUDE := -isystem linux-headers-4.9.201-tegra-ubuntu18.04_aarch64/kernel-4.9/arch/arm64/include
+INCLUDE := -isystem linux-headers-4.9.201-tegra-ubuntu18.04_aarch64/kernel-4.9/include
+INCLUDE += -I.
+INCLUDE += -Ilinux-headers-4.9.201-tegra-ubuntu18.04_aarch64/kernel-4.9/arch/arm64/include
+INCLUDE += -Ilinux-headers-4.9.201-tegra-ubuntu18.04_aarch64/kernel-4.9/arch/arm64/include/generated
+CFLAGS  := -O2 -DMODULE -D__KERNEL__ ${WARN} ${INCLUDE} -DCONFIG_PGTABLE_LEVELS=3
+CROSS_COMPILE := aarch64-linux-gnu-
+ARCH := arm64
+#-DBITS_PER_LONG=64 -DCONFIG_ARM64_UAO=y
+CC      := aarch64-linux-gnu-gcc
+
+obj-m += ${TARGET}.o
+
+${TARGET}.o: ${TARGET}.c
+
+all:
+	@echo all done
+	#make -C kernel/kernel-4.9/ ARCH=arm64 O=${KERNEL_OUT} CROSS_COMPILE=${CROSS_COMPILE} -j6 modules
+
+.PHONY: clean
+
+clean:
+	rm -rf ${TARGET}.ko
