@@ -235,6 +235,7 @@ static int ar0330_write_table(struct ar0330 *priv, const struct ar0330_reg table
 static void ar0330_gpio_set(struct ar0330 *priv,
 			    unsigned int gpio, int val)
 {
+	int i = ctrlvals[0].step;
 	if (priv->pdata && priv->pdata->use_cam_gpio)
 		cam_gpio_ctrl(&priv->i2c_client->dev, gpio, val, 1);
 	else {
@@ -451,14 +452,15 @@ static int ar0330_s_stream(struct v4l2_subdev *sd, int enable)
 	
 	dev_dbg(&client->dev, "%s++\n", __func__);
 	pr_err("ar0330_s_stream enable mode table = %u\n", enable);
+
 	if (!enable) {
-		return ar0330_write_table(priv,
-					  mode_table[AR0330_MODE_STOP_STREAM]);
+		return ar0330_write_table(priv, mode_table[AR0330_MODE_STOP_STREAM]);
 	} else {
 	pr_err("ar0330_s_stream starting test mode\n");
+//		return ar0330_write_table(priv,
+//			  mode_table[AR0330_MODE_STOP_STREAM]);
 
-		return ar0330_write_table(priv,
-					  mode_table[AR0330_MODE_TEST_PATTERN]);
+		return ar0330_write_table(priv, mode_table[AR0330_MODE_TEST_PATTERN]);
 	}
 
 
@@ -544,15 +546,20 @@ static int ar0330_g_parm(struct v4l2_subdev *sd, struct v4l2_streamparm *param)
 	struct camera_common_data *s_data = to_camera_common_data(&client->dev);
 	struct ar0330 *priv = (struct ar0330 *)s_data->priv;
 
+	pr_err("[[%s]]", __func__);
+
 	if (!priv || !priv->pdata) {
 		return -EINVAL;
 	}
 	param->parm.capture.capability |= V4L2_CAP_TIMEPERFRAME;
 
+	pr_err("FR index = %d", priv->frate_index);
+	pr_err("FR mode = %d", priv->frmfmt_mode);
+
 	param->parm.capture.timeperframe.denominator =
 	    ar0330_frmfmt[priv->frmfmt_mode].framerates[priv->frate_index];
 
-	//printk("priv->denom = %d\n",param->parm.capture.timeperframe.denominator);
+	pr_err("priv->denom = %d\n",param->parm.capture.timeperframe.denominator);
 	param->parm.capture.timeperframe.numerator = 1;
 	return 0;
 }
@@ -646,6 +653,7 @@ static int ar0330_set_fmt(struct v4l2_subdev *sd,
 	struct i2c_client *client = v4l2_get_subdevdata(sd);
 	struct camera_common_data *s_data = to_camera_common_data(&client->dev);
 	struct ar0330 *priv = (struct ar0330 *)s_data->priv;
+	pr_err("[[[%s]]]", __func__);
 
 	if (!priv || !priv->pdata)
 		return -EINVAL;
@@ -656,12 +664,15 @@ static int ar0330_set_fmt(struct v4l2_subdev *sd,
 			break;
 
 		default:
+			pr_err("[[[%s]]] => FORMAT.CODE = %d, only %d is accepted", __func__, format->format.code, MEDIA_BUS_FMT_UYVY8_1X16);
 			/* Not Implemented */
 			//if (format->which != V4L2_SUBDEV_FORMAT_TRY) 		
 				return -EINVAL;
 		}
 
 	for (ret = 0; ret < s_data->numfmts ; ret++) {
+		pr_err("Width %d, Req: %d", ar0330_frmfmt[ret].size.width, format->format.width);
+		pr_err("Height %d, Req: %d", ar0330_frmfmt[ret].size.height, format->format.height);
 		if ((ar0330_frmfmt[ret].size.width == format->format.width)
 				&& (ar0330_frmfmt[ret].size.height ==
 					format->format.height)) {
@@ -677,7 +688,7 @@ static int ar0330_set_fmt(struct v4l2_subdev *sd,
 	} else {
 		ret = camera_common_s_fmt(sd, &format->format);
 	}
-    	printk("%s--\n",__func__);
+    	printk("%s => ret = %d\n",__func__, ret);
 	return ret;
 }
 #if 0
@@ -709,8 +720,8 @@ static struct of_device_id ar0330_of_match[] = {
 };
 
 static struct camera_common_sensor_ops ar0330_common_ops = {
-        .power_on = ar0330_power_on,
-        .power_off = ar0330_power_off,
+//        .power_on = ar0330_power_on,
+//        .power_off = ar0330_power_off,
 	.write_reg = ar0330_write_8b_reg,
 	.read_reg = ar0330_read_8b_reg,
 };
@@ -983,13 +994,14 @@ static int ar0330_set_defaults(struct camera_common_data *cam_data)
 
 	return 0;
 }
-	
+
 #define ADD_CTRL(nctrl) priv->ctrls[V4L2_CTRL_##nctrl] = v4l2_ctrl_new_std(&priv->ctrl_handler, 			\
 							&ar0330_ctrl_ops, V4L2_CID_##nctrl, 				\
 							ctrl(nctrl, min), 						\
 							ctrl(nctrl, max), 						\
 							ctrl(nctrl, step), 						\
 							ctrl(nctrl, def)); 						\
+//							pr_err(STR(V4L2_CID_##nctrl));					\
 							if (priv->ctrl_handler.error) { 				\
 								printk("%s %s %d %s\n", __FILE__, __func__, __LINE__, #nctrl); 	\
 							}
@@ -1029,16 +1041,16 @@ static int ar0330_ctrls_init(struct ar0330 *priv)
 	ADD_CTRL(BRIGHTNESS);
 	ADD_CTRL(CONTRAST);
 	ADD_CTRL(SATURATION);
-//	ADD_CTRL(AUTO_WHITE_BALANCE);
-//	ADD_CTRL(GAMMA);
-//	ADD_CTRL(GAIN);
-//	ADD_CTRL(HFLIP);
-//	ADD_CTRL(VFLIP);
-//	ADD_CTRL(WHITE_BALANCE_TEMPERATURE);
-//	ADD_CTRL(SHARPNESS);
+	ADD_CTRL(AUTO_WHITE_BALANCE);
+	ADD_CTRL(GAMMA);
+	ADD_CTRL(GAIN);
+	ADD_CTRL(HFLIP);
+	ADD_CTRL(VFLIP);
+	ADD_CTRL(WHITE_BALANCE_TEMPERATURE);
+	ADD_CTRL(SHARPNESS);
 /*  Camera class */
-//	ADD_MENU_CTRL(EXPOSURE_AUTO);
-//	ADD_CTRL(EXPOSURE_ABSOLUTE);
+	ADD_MENU_CTRL(EXPOSURE_AUTO);
+	ADD_CTRL(EXPOSURE_ABSOLUTE);
 	
 	priv->numctrls = numctrls;
 	priv->subdev->ctrl_handler = &priv->ctrl_handler;
@@ -1159,13 +1171,16 @@ static const struct media_entity_operations ar0330_media_ops = {
 
 static int ar0330_load_boot_data(struct camera_common_data *common_data)
 {
-	u32 i, sizeof_boot_data = ARRAY_SIZE(AR0330_BOOT_DATA);
+	u32 i, sizeof_boot_data = ARRAY_SIZE(AR0330_BOOT_DATA); //0x3f4
 	int flag = 0, bcount = 0, ret = 0;
 	u16 boot_base_addr = AR0330_BOOT_BASE_ADDRESS;	/* Boot reg address space : 0x8000 to 0x9FFF */
 	u8 *boot_data, *pll_init_data;
 	u16 crc = 0;
 	u16 boot_stage = 0;
 	u16 warning0 = 0;
+
+	//memset(AR0330_BOOT_DATA, 0, sizeof AR0330_BOOT_DATA);
+	//memcpy(AR0330_BOOT_DATA, AR0330_BOOT_DATA_INT, sizeof AR0330_BOOT_DATA / 2);
 
 	boot_data = (u8 *) kmalloc(BURST_SIZE, GFP_KERNEL);
 	if (!boot_data) {
@@ -1270,7 +1285,7 @@ static int ar0330_load_boot_data(struct camera_common_data *common_data)
 	ar0330_read_16b_reg(common_data, 0xf052, &crc);
 	if (crc != BOOT_DATA_CRC) {
 		pr_err("Init setting dump failure. CRC = 0x%X \n", crc);
-		ret = -1;
+//		ret = -1;
 		goto end;
 	} else {
 		printk("Init setting dump success. CRC = 0x%X Verified\n", crc);
@@ -1286,7 +1301,7 @@ static int ar0330_load_boot_data(struct camera_common_data *common_data)
 	ar0330_read_16b_reg(common_data, 0x6002, &boot_stage);
 	pr_err("Boot stage = %u\n", boot_stage);
 
-	if (boot_stage != 0x1) {// 0xffff
+	if (boot_stage != 0xffff) {
 		pr_err("ISP Boot Failure. boot_stage = 0x%X \n", boot_stage);
 
 		/*  Get warning0 to check whether any sensor is disconnected */
@@ -1299,12 +1314,12 @@ static int ar0330_load_boot_data(struct camera_common_data *common_data)
 		else
 			pr_err("warning0 = 0x%X \n", warning0);
 	}
-/*
+
 	if (get_error_status_3mp(common_data)) {
 		pr_err("ISP error \n");
 		ret = -1;
 		goto end;
-	}*/
+	}
  end:
 	kfree(boot_data);
 	kfree(pll_init_data);
@@ -1413,171 +1428,10 @@ static int ar0330_write_array(struct i2c_client *client,
 	return ret;
 }
 
-static int ar0330_power_on(struct camera_common_data *s_data);
-
-
-static int imx185_power_on(struct camera_common_data *s_data)
-{
-	pr_err("imx185_power_on");
-     return ar0330_power_on(s_data);
-}
-
-static inline int imx185_read_reg(struct camera_common_data *s_data,
-                                u16 addr, u8 *val)
-{
-        int err = 0;
-	pr_err("imx185_read_reg");
-        return err;
-}
-
-static int imx185_write_reg(struct camera_common_data *s_data,
-                                u16 addr, u8 val)
-{
-	pr_err("imx185_write_reg");
-	return 0;
-}
-
-static struct camera_common_pdata *ar0330_parse_dt(struct i2c_client *client);
-
-static struct camera_common_pdata *imx185_parse_dt(struct tegracam_device *tc_dev)
-{
-	pr_err("%s -> tc_dev->client = 0x%lx", __func__, tc_dev->client);
-	return ar0330_parse_dt(tc_dev->client);
-}
-
-static int imx185_power_get(struct tegracam_device *tc_dev)
-{
-	pr_err("%s", __func__);
-	return 0;
-}
-
-static int imx185_power_put(struct tegracam_device *tc_dev)
-{
-	pr_err("%s", __func__);
-	return 0;
-}
-
-static int imx185_set_mode(struct tegracam_device *tc_dev)
-{
-	pr_err("%s", __func__);
-	return 0;
-
-}
-
-static int imx185_start_streaming(struct tegracam_device *tc_dev)
-{
-	pr_err("%s", __func__);
-	struct ar0330 *priv = (struct ar0330 *)tc_dev->priv;
-	return ar0330_write_table(priv, mode_table[AR0330_MODE_TEST_PATTERN]);
-}
-
-static int imx185_stop_streaming(struct tegracam_device *tc_dev)
-{
-	pr_err("%s", __func__);
-	struct ar0330 *priv = (struct ar0330 *)tc_dev->priv;
-	return ar0330_write_table(priv, mode_table[AR0330_MODE_STOP_STREAM]);
-}
-
-static struct camera_common_sensor_ops ar0330b_common_ops = {
-        .numfrmfmts = ARRAY_SIZE(ar0330_frmfmt),
-        .frmfmt_table = ar0330_frmfmt,
-        .power_on = imx185_power_on,
-        .power_off = imx185_power_on,
-        .write_reg = imx185_write_reg,
-        .read_reg = imx185_read_reg,
-        .parse_dt = imx185_parse_dt,
-        .power_get = imx185_power_get,
-        .power_put = imx185_power_put,
-        .set_mode = imx185_set_mode,
-        .start_streaming = imx185_start_streaming,
-        .stop_streaming = imx185_stop_streaming,
-};
-
-static int imx185_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
-{
-        pr_err("%s", __func__);
-        return 0;
-}
-
-
-static const struct v4l2_subdev_internal_ops ar0330b_subdev_ops = {
-        .open = imx185_open,
-};
-
-static const u32 ctrl_cid_list[] = {
-//        TEGRA_CAMERA_CID_GAIN,
-//        TEGRA_CAMERA_CID_EXPOSURE,
-//        TEGRA_CAMERA_CID_FRAME_RATE,
-        TEGRA_CAMERA_CID_FUSE_ID,
-//        TEGRA_CAMERA_CID_HDR_EN,
-//        TEGRA_CAMERA_CID_SENSOR_MODE_ID,
-};
-
-static int imx185_set_gain(struct tegracam_device *tc_dev, s64 val)
-{
-	pr_err("XXXXXXXXXXX %s YYYYYYYYYYYYY", __func__);
-	return 0;
-}
-
-static int imx185_set_exposure(struct tegracam_device *tc_dev, s64 val)
-{
-	pr_err("%s", __func__);
-	return 0;
-}
-
-static int imx185_set_frame_rate(struct tegracam_device *tc_dev, s64 val)
-{
-	pr_err("%s", __func__);
-	return 0;
-}
-
-static int imx185_set_group_hold(struct tegracam_device *tc_dev, bool val)
-{
-	pr_err("%s", __func__);
-	return 0;
-}
-
-
-static int imx185_fill_string_ctrl(struct tegracam_device *tc_dev,
-                                struct v4l2_ctrl *ctrl)
-{
-	pr_err("%s", __func__);
-	struct ar0330 *priv = tc_dev->priv;
-        int i;
-
-        switch (ctrl->id) {
-        case TEGRA_CAMERA_CID_FUSE_ID:
-                for (i = 0; i < IMX185_FUSE_ID_SIZE; i++)
-                        sprintf(&ctrl->p_new.p_char[i*2], "%02x",
-                                priv->fuse_id[i]);
-                break;
-        default:
-                return -EINVAL;
-        }
-
-	pr_err("FUSE ID = %s", ctrl->p_new.p_char);
-
-        ctrl->p_cur.p_char = ctrl->p_new.p_char;
-
-	return 0;
-}
-
-static struct tegracam_ctrl_ops ar0330b_ctrl_ops = {
-        .numctrls = ARRAY_SIZE(ctrl_cid_list),
-        .ctrl_cid_list = ctrl_cid_list,
-        .string_ctrl_size = {0, IMX185_FUSE_ID_SIZE},
-//        .set_gain = imx185_set_gain,
-//        .set_exposure = imx185_set_exposure,
-//        .set_frame_rate = imx185_set_frame_rate,
-        .set_group_hold = imx185_set_group_hold,
-        .fill_string_ctrl = imx185_fill_string_ctrl,
-};
-
 
 static int ar0330_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
-	struct tegracam_device *tc_dev;
 	struct camera_common_data *common_data;
 	struct device_node *node = client->dev.of_node;
 	struct ar0330 *priv;
@@ -1623,37 +1477,12 @@ static int ar0330_probe(struct i2c_client *client,
 	if (!common_data)
 		return -ENOMEM;
 
-	tc_dev = devm_kzalloc(&client->dev, sizeof(struct tegracam_device), GFP_KERNEL);
-        if (!tc_dev)
-                return -ENOMEM;
-
 	priv = devm_kzalloc(&client->dev,
 			    sizeof(struct ar0330) + sizeof(struct v4l2_ctrl) *
 			    (AR0330_NUM_CONTROLS), GFP_KERNEL);
 
 	if (!priv)
 		return -ENOMEM;
-
-
-	tc_dev->client = client;
-	tc_dev->dev = &client->dev;
-        strncpy(tc_dev->name, "ar0330", sizeof(tc_dev->name));
-        tc_dev->dev_regmap_config = &ar0330_w_regmap_config;
-        tc_dev->sensor_ops = &ar0330b_common_ops;
-        tc_dev->v4l2sd_internal_ops = &ar0330b_subdev_ops;
-        tc_dev->tcctrl_ops = &ar0330b_ctrl_ops;
-	pr_err("Registering tegracam_device_register");
-
-        err = tegracam_device_register(tc_dev);
-        if (err) {
-                dev_err(&client->dev, "tegra camera driver registration failed\n");
-                return err;
-        }
-        priv->tc_dev = tc_dev;
-        priv->s_data = tc_dev->s_data;
-        priv->subdev = &tc_dev->s_data->subdev;
-        tegracam_set_privdata(tc_dev, (void *)priv);
-
 
 	priv->b_regmap = devm_regmap_init_i2c(client, &ar0330_b_regmap_config);
 	if (IS_ERR(priv->b_regmap)) {
@@ -1833,11 +1662,12 @@ pr_err("INITING ar0330_ctrls_init DONE\n");
 	priv->subdev->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE |
 	    V4L2_SUBDEV_FL_HAS_EVENTS;
 
-#if defined(CONFIG_MEDIA_CONTROLLER_XXX)
+#if defined(CONFIG_MEDIA_CONTROLLER)
+pr_err("INITING MEDIA ENTITY\n");
 	priv->pad.flags = MEDIA_PAD_FL_SOURCE;
-//	priv->subdev->entity.obj_type = MEDIA_ENT_T_V4L2_SUBDEV_SENSOR;
+	priv->subdev->entity.type = MEDIA_ENT_T_V4L2_SUBDEV_SENSOR;
 	priv->subdev->entity.ops = &ar0330_media_ops;
-	err = tegra_media_entity_init(&priv->subdev->entity, 1, &priv->pad, 1, 1);
+	err = media_entity_init(&priv->subdev->entity, 1, &priv->pad, 0);
 	if (err < 0) {
 		dev_err(&client->dev, "unable to init media entity\n");
 		return err;
@@ -1860,13 +1690,10 @@ pr_err("XX INITING v4l2_async_register_subdev\n");
 	ss_data = to_camera_common_data(&client->dev);
 pr_err("XX INITING v4l2_async_register_subdev\n");
 	ss_data = to_camera_common_data(&client->dev);
-	err = tegracam_v4l2subdev_register(tc_dev, true);
-//	err = v4l2_async_register_subdev(priv->subdev);
+	err = v4l2_async_register_subdev(priv->subdev);
 pr_err("v4l2_async_register_subdev DONE\n");
-        if (err) {
-                dev_err(&client->dev, "tegra camera subdev registration failed\n");
-                return err;
-        }
+	if (err)
+		return err;
 
 	printk("Detected AR0330 sensor\n");
 

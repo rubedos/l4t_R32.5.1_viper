@@ -21,7 +21,8 @@ static struct ar0330_reg mode_def[] = {
         {0x3086, 0x0253},
         {0x30CE, 0x0010},
         {0x301A, 0x015C},
-        {AR0330_TABLE_END, 0x00},
+        {AR0330_TABLE_END, 0x00}
+
 };
 
 static struct ar0330_reg mode_2304x1536[] = {
@@ -802,6 +803,30 @@ extern struct ar0330_reg mode_720p_60fps[] = {
 	{SWP(0x3c00, 0x2020)},
 	{SWP(0x0000, 0x0001)},
 };
+extern struct ar0330_reg mode_720p_30fps[] = {
+	{SWP(0x000a, 0x0000)},
+	{SWP(0x0280, 0x2000)},
+	{SWP(0x0168, 0x2002)},
+	{SWP(0x2000, 0x1000)},
+	{SWP(0x0003, 0x2014)},
+	{SWP(0x01f2, 0x2004)},
+	{SWP(0x3e0e, 0x2008)},
+	{SWP(0x2000, 0x1000)},
+	{SWP(0x1e00, 0x2020)},
+	{SWP(0x0000, 0x0001)},
+};
+/*
+[   40.065423] {0x0, 0xa}
+[   40.078330] {0x2000, 0x280}
+[   40.081146] {0x2002, 0x168}
+[   40.083963] {0x1000, 0x2000}
+[   40.087121] {0x2014, 0x3}
+[   40.089936] {0x2004, 0x1f2}
+[   40.092950] {0x2008, 0x3e0e}
+[   40.096050] {0x1000, 0x2000}
+[   40.099155] {0x2020, 0x1e00}
+[   40.102240] {0x1, 0x0}
+*/
 
 extern struct ar0330_reg mode_stop[] = {
 	{SWP(0x000a, 0x0000)},
@@ -809,22 +834,21 @@ extern struct ar0330_reg mode_stop[] = {
 };
 
 enum {
+	AR0330_MODE_TEST_PATTERN,
 	AR0330_MODE_DEFAULT,
 	AR0330_MODE_2304X1536,
 	AR0330_MODE_1280X720,
 	AR0330_MODE_1280X960,
 	AR0330_MODE_2048X1296,
-	AR0330_MODE_TEST_PATTERN,
 	AR0330_MODE_STOP_STREAM,
  };
 
 static struct ar0330_reg *mode_table[] = {
-        [AR0330_MODE_DEFAULT] = mode_def,
+        [AR0330_MODE_DEFAULT] = mode_720p_30fps,
         [AR0330_MODE_2304X1536] = mode_2304x1536,
         [AR0330_MODE_1280X720] = mode_1280x720,
         [AR0330_MODE_1280X960] = mode_1280x960,
         [AR0330_MODE_2048X1296] = mode_2048x1296,
-        [AR0330_MODE_TEST_PATTERN] = mode_720p_60fps, //tp_colorbar,
+        [AR0330_MODE_TEST_PATTERN] = mode_720p_30fps,//mode_def,//mode_stop,//tp_colorbar,//mode_1280x720,//mode_720p_60fps, //tp_colorbar,
 	[AR0330_MODE_STOP_STREAM] = mode_stop,
 };
-

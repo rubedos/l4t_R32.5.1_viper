@@ -7,7 +7,10 @@
 #include <linux/regmap.h>
 
 #define RANGE_MAP(a, b, c, d, e) a
-#define ctrl(a, b) b
+
+
+#define STR(x) #x
+
 
 static int ar0330_g_volatile_ctrl(struct v4l2_ctrl *ctrl);
 
@@ -18,13 +21,12 @@ static int ar0330_s_ctrl(struct v4l2_ctrl *ctrl);
 
 
 #define AR0330_STEREO_DRIVER_VERSION "1.0.0"
-#define AR0330_DEFAULT_HEIGHT 720				// Ok
-#define AR0330_DEFAULT_WIDTH 560				// Ok
+#define AR0330_DEFAULT_HEIGHT 480				// Ok
+#define AR0330_DEFAULT_WIDTH 1280				// Ok
 #define AR0330_DEFAULT_DATAFMT MEDIA_BUS_FMT_UYVY8_1X16 //MEDIA_BUS_FMT_UYVY8_2X8 //,MEDIA_BUS_FMT_UYVY8_1X16 //V4L2_PIX_FMT_UYVY//9 //13 //MEDIA_BUS_FMT_UYVY8_1X16		// Probably Ok
-#define AR0330_NUM_CONTROLS 3//3 //12					// Probably Ok
+#define AR0330_NUM_CONTROLS 12					// Probably Ok
 #define AR0330_BOOT_BASE_ADDRESS 0x8000				// Ok
 #define AR0330_DEFAULT_MODE 0					// Ok
-#define AR0330_MODE_STOP_STREAM 0
 #define AR0330_MODE_HD 0
 #define AR0330_60_FPS_INDEX 0
 
@@ -40,8 +42,6 @@ static int ar0330_s_ctrl(struct v4l2_ctrl *ctrl);
 #define AR0330_MODE_NHD 0
 #define AR0330_360P_60FPS 0
 #define AR0330_360P_30FPS 0
-#define AR0330_MODE_TEST_PATTERN 0
-#define AR0330_MODE_STOP_STREAM 0
 
 
 #define PRIMARY_SENSOR_DISCONNECTED_MASK 0
@@ -53,11 +53,11 @@ static int ar0330_s_ctrl(struct v4l2_ctrl *ctrl);
 
 
 static const int imx268_30fps[] = {
-        30,
+        30, 60
 };
 
 static const struct camera_common_frmfmt ar0330_frmfmt[] = {
-        {{2304, 1536}, imx268_30fps, 1, 0, AR0330_MODE_2304X1536},
+        {{1280, 360}, imx268_30fps, 2, 0, AR0330_MODE_TEST_PATTERN},
 };
 
 extern const struct regmap_config ar0330_dw_regmap_config = {
@@ -73,36 +73,64 @@ extern const struct regmap_config ar0330_w_regmap_config = {
         .val_bits = 16
 };
 
-#define BRIGHTNESS 0
-#define CONTRAST 0
-#define SATURATION 0
-#define SHARPNESS 0
-#define GAIN 0
-#define GAMMA 0
-#define AUTO_WHITE_BALANCE 0
-#define WHITE_BALANCE_TEMPERATURE 0
-#define VFLIP 0
-#define HFLIP 0
-#define EXPOSURE_AUTO 0
-#define EXPOSURE_ABSOLUTE 0
+enum {
+BRIGHTNESS,
+CONTRAST,
+SATURATION,
+SHARPNESS,
+GAIN,
+GAMMA,
+AUTO_WHITE_BALANCE,
+WHITE_BALANCE_TEMPERATURE,
+VFLIP,
+HFLIP,
+EXPOSURE_AUTO,
+EXPOSURE_ABSOLUTE,
+};
+
+struct ctrl_vals {
+	int min;
+	int max;
+	int step;
+	int def;
+};
+
+
+static struct ctrl_vals ctrlvals[] = {
+        [BRIGHTNESS] = {-15, 15, 1, 0},
+        [CONTRAST] = {0, 60, 1, 10},
+        [SATURATION] = {0, 90, 1, 20},
+        [SHARPNESS] = {0, 7, 1, 0},
+        [GAIN] = {1, 100, 1, 3},
+        [GAMMA] = {40, 500, 1, 220},
+        [AUTO_WHITE_BALANCE] = {0, 1, 1, 1},
+        [WHITE_BALANCE_TEMPERATURE] = {10, 10000, 10, 4600},
+        [VFLIP] = {0, 1, 1, 0},
+        [HFLIP] = {0, 1, 1, 0},
+        [EXPOSURE_AUTO] = {0, 1, 0, 0},
+        [EXPOSURE_ABSOLUTE] = {1, 10000, 1, 156},
+};
+
+
+#define ctrl(index, name) ctrlvals[index].name
+
 
 #define V4L2_CTRL_BRIGHTNESS 0
 #define V4L2_CTRL_CONTRAST 1
 #define V4L2_CTRL_SATURATION 2
-#define V4L2_CTRL_AUTO_WHITE_BALANCE 33
-#define V4L2_CTRL_GAMMA 35
-#define V4L2_CTRL_GAIN 37
-#define V4L2_CTRL_HFLIP 39
-#define V4L2_CTRL_VFLIP 41
-#define V4L2_CTRL_WHITE_BALANCE_TEMPERATURE 43
-#define V4L2_CTRL_SHARPNESS 45
-#define V4L2_CTRL_EXPOSURE_AUTO 47
-#define V4L2_CTRL_EXPOSURE_ABSOLUTE 49
+#define V4L2_CTRL_AUTO_WHITE_BALANCE 4
+#define V4L2_CTRL_GAMMA 5
+#define V4L2_CTRL_GAIN 6
+#define V4L2_CTRL_HFLIP 7
+#define V4L2_CTRL_VFLIP 8
+#define V4L2_CTRL_WHITE_BALANCE_TEMPERATURE 9
+#define V4L2_CTRL_SHARPNESS 10
+#define V4L2_CTRL_EXPOSURE_AUTO 11
+#define V4L2_CTRL_EXPOSURE_ABSOLUTE 12
+
 
 #define REGISTER_SHARPNESS_MIN 0
 #define REGISTER_SHARPNESS_MAX 0
-
-#define IMX185_FUSE_ID_SIZE 16
 
 struct ar0330 {
 	int numctrls;					// Ok
@@ -132,15 +160,7 @@ struct ar0330 {
 	struct i2c_client *i2c_client;
 	struct camera_common_pdata *pdata;		// Ok
 	struct camera_common_data *s_data;		// Ok
-	struct tegracam_device *tc_dev;			// 2. In probe(), allocate memory for the new struct tc_dev. Use it in the new tegracam_device_register() and tegracam_subdev_register() functions to set up the sensor context and register the device as V4L2 sub-device.
-	char fuse_id[IMX185_FUSE_ID_SIZE];
 	struct v4l2_ctrl *ctrls[];			// Ok
 };
-
-
-unsigned char min = 0;
-unsigned char step = 1;
-unsigned char max = 0xFF;
-unsigned char def = 0xFF;
 
 #endif
